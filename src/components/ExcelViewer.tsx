@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { FileUp, Download, Search, FileSpreadsheet, Clock } from 'lucide-react';
+import { FileUp, Download, Search, FileSpreadsheet, Clock, Save } from 'lucide-react';
 import Dashboard from './Dashboard';
 import DataTable from './DataTable';
 import SheetSelector from './SheetSelector';
 import { ExcelData } from '../types/ExcelTypes';
+
+interface SavedDashboard {
+  name: string;
+  data: any[][];
+  savedAt: string;
+}
 
 const ExcelViewer: React.FC = () => {
   const [excelData, setExcelData] = useState<ExcelData | null>(null);
@@ -12,6 +18,16 @@ const ExcelViewer: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [fileName, setFileName] = useState<string>('');
   const [importDateTime, setImportDateTime] = useState<string | null>(null);
+  const [savedDashboards, setSavedDashboards] = useState<SavedDashboard[]>([]);
+  const [selectedDashboard, setSelectedDashboard] = useState<SavedDashboard | null>(null);
+
+  useEffect(() => {
+    // Load saved dashboards from localStorage on component mount
+    const saved = localStorage.getItem('savedDashboards');
+    if (saved) {
+      setSavedDashboards(JSON.parse(saved));
+    }
+  }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -19,6 +35,7 @@ const ExcelViewer: React.FC = () => {
 
     setFileName(file.name);
     setImportDateTime(new Date().toLocaleString());
+    setSelectedDashboard(null);
     
     const reader = new FileReader();
     
@@ -43,6 +60,33 @@ const ExcelViewer: React.FC = () => {
       }
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const saveDashboard = () => {
+    if (!excelData || !selectedSheet || !fileName) return;
+
+    const dashboardName = fileName.replace(/\.[^/.]+$/, '') + '_' + selectedSheet;
+    const newDashboard: SavedDashboard = {
+      name: dashboardName,
+      data: excelData.sheets[selectedSheet],
+      savedAt: new Date().toLocaleString(),
+    };
+
+    const updatedDashboards = [...savedDashboards.filter(d => d.name !== dashboardName), newDashboard];
+    setSavedDashboards(updatedDashboards);
+    localStorage.setItem('savedDashboards', JSON.stringify(updatedDashboards));
+    alert('Dashboard saved successfully!');
+  };
+
+  const loadDashboard = (dashboard: SavedDashboard) => {
+    setSelectedDashboard(dashboard);
+    setExcelData({
+      sheets: { [dashboard.name]: dashboard.data },
+      sheetNames: [dashboard.name]
+    });
+    setSelectedSheet(dashboard.name);
+    setFileName(dashboard.name);
+    setImportDateTime(dashboard.savedAt);
   };
 
   const exportToExcel = () => {
@@ -84,15 +128,46 @@ const ExcelViewer: React.FC = () => {
           </label>
           
           {excelData && (
-            <button 
-              onClick={exportToExcel}
-              className="flex items-center justify-center px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors duration-300"
-            >
-              <Download className="h-5 w-5 mr-2" />
-              <span className="text-sm font-medium">Export Modified</span>
-            </button>
+            <>
+              <button 
+                onClick={exportToExcel}
+                className="flex items-center justify-center px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors duration-300"
+              >
+                <Download className="h-5 w-5 mr-2" />
+                <span className="text-sm font-medium">Export Modified</span>
+              </button>
+              
+              <button 
+                onClick={saveDashboard}
+                className="flex items-center justify-center px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors duration-300"
+              >
+                <Save className="h-5 w-5 mr-2" />
+                <span className="text-sm font-medium">Save Dashboard</span>
+              </button>
+            </>
           )}
         </div>
+
+        {savedDashboards.length > 0 && !selectedDashboard && (
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-700 mb-3">Saved Dashboards</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {savedDashboards.map((dashboard) => (
+                <button
+                  key={dashboard.name}
+                  onClick={() => loadDashboard(dashboard)}
+                  className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300"
+                >
+                  <FileSpreadsheet className="h-5 w-5 text-blue-500 mr-3" />
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">{dashboard.name}</div>
+                    <div className="text-sm text-gray-500">Saved: {dashboard.savedAt}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         
         {fileName && (
           <div className="flex flex-col md:flex-row md:items-center gap-2 text-sm text-gray-600 mb-4">
@@ -141,14 +216,14 @@ const ExcelViewer: React.FC = () => {
           </>
         )}
         
-        {!excelData && (
+        {!excelData && !selectedDashboard && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="bg-gray-100 p-6 rounded-full mb-4">
               <FileSpreadsheet className="h-12 w-12 text-blue-500" />
             </div>
             <h3 className="text-xl font-medium text-gray-800 mb-2">No Excel File Loaded</h3>
             <p className="text-gray-600 max-w-md">
-              Upload an Excel file to view and edit its contents. Supported formats: .xlsx, .xls, and .csv
+              Upload an Excel file to view and edit its contents, or select a saved dashboard above. Supported formats: .xlsx, .xls, and .csv
             </p>
           </div>
         )}
