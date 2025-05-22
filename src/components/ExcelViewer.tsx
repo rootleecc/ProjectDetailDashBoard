@@ -85,6 +85,21 @@ const ExcelViewer: React.FC = () => {
     setImportDateTime(dashboard.savedAt);
   };
 
+  const deleteDashboard = (dashboardName: string) => {
+    if (confirm('Are you sure you want to delete this dashboard?')) {
+      const updatedDashboards = savedDashboards.filter(d => d.name !== dashboardName);
+      setSavedDashboards(updatedDashboards);
+      localStorage.setItem('savedDashboards', JSON.stringify(updatedDashboards));
+      
+      if (selectedSheet === dashboardName) {
+        setExcelData(null);
+        setSelectedSheet('');
+        setFileName('');
+        setImportDateTime(null);
+      }
+    }
+  };
+
   const exportToExcel = () => {
     if (!excelData || !selectedSheet) return;
     
@@ -120,6 +135,7 @@ const ExcelViewer: React.FC = () => {
                 onSelectSheet={setSelectedSheet}
                 savedDashboards={savedDashboards}
                 onLoadDashboard={loadDashboard}
+                onDeleteDashboard={deleteDashboard}
               />
               <span className="text-sm text-gray-500">Select a saved dashboard to load</span>
             </div>
@@ -183,6 +199,7 @@ const ExcelViewer: React.FC = () => {
                 onSelectSheet={setSelectedSheet}
                 savedDashboards={savedDashboards}
                 onLoadDashboard={loadDashboard}
+                onDeleteDashboard={deleteDashboard}
               />
               
               <div className="flex-1 relative">
