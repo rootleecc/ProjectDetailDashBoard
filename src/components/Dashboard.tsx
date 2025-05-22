@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { GitPullRequest, PackageCheck, TestTube2, Workflow, FileCheck2, Clock, Package, FileSpreadsheet } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, plugins } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Pie, Bar } from 'react-chartjs-2';
@@ -53,7 +52,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     const headers = data[0];
     const rows = data.slice(1);
 
-    // Find column indices
     const statusIndex = headers.findIndex(h => h === 'Project Status');
     const approvalIndex = headers.findIndex(h => h === 'Requirements Approval Status');
     const smeIndex = headers.findIndex(h => h === 'SME Design Required?');
@@ -138,8 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
   if (!stats) return null;
 
-  const renderStatusCard = useMemo(() => (title: string, data: StatusCount, icon: React.ReactNode, colorClass: string, chartType: 'pie' | 'bar' = 'pie') => {
-    // Sort data by values
+  const renderStatusCard = useMemo(() => (title: string, data: StatusCount, colorClass: string, chartType: 'pie' | 'bar' = 'pie') => {
     const sortedData = Object.fromEntries(
       Object.entries(data).sort(([, a], [, b]) => a - b)
     );
@@ -147,82 +144,60 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     const total = Object.values(data).reduce((sum, count) => sum + count, 0);
     
     return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-gray-500 text-sm font-medium">{title} (Total: {total})</h3>
-        <div className={`${colorClass} p-2 rounded-lg`}>
-          {icon}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-gray-500 text-sm font-medium">{title} (Total: {total})</h3>
         </div>
-      </div>
-      <div style={{ height: '250px' }} className="mb-4">
-        {chartType === 'pie' ? (
-          <Pie 
-            data={createChartData(sortedData, title)} 
-            options={{
-              ...chartOptions,
-              plugins: {
-                ...chartOptions.plugins,
-                datalabels: {
-                  display: true
+        <div style={{ height: '250px' }} className="mb-4">
+          {chartType === 'pie' ? (
+            <Pie 
+              data={createChartData(sortedData, title)} 
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  datalabels: {
+                    display: true
+                  }
                 }
-              }
-            }}
-          />
-        ) : (
-          <Bar data={createChartData(sortedData, title)} options={{
-            ...chartOptions,
-            plugins: {
-              ...chartOptions.plugins,
-              datalabels: {
-                display: false
-              }
-            }
-          }} />
-        )}
-      </div>
-      <div className="space-y-2">
-        {Object.entries(sortedData).map(([status, count]) => (
-          <div key={status} className="flex justify-between items-center">
-            <div className="flex items-start w-full">
-              <div className="text-sm text-gray-600 min-w-[200px]">{status}</div>
-              <div className="font-semibold text-gray-800">
-              {count} ({((count / Object.values(data).reduce((a, b) => a + b, 0)) * 100).toFixed(1)}%)
+              }}
+            />
+          ) : (
+            <Bar 
+              data={createChartData(sortedData, title)} 
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  datalabels: {
+                    display: false
+                  }
+                }
+              }} 
+            />
+          )}
+        </div>
+        <div className="space-y-2">
+          {Object.entries(sortedData).map(([status, count]) => (
+            <div key={status} className="flex justify-between items-center">
+              <div className="flex items-start w-full">
+                <div className="text-sm text-gray-600 min-w-[200px]">{status}</div>
+                <div className="font-semibold text-gray-800">
+                  {count} ({((count / Object.values(data).reduce((a, b) => a + b, 0)) * 100).toFixed(1)}%)
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
   }, []);
-
-  const chartData = useMemo(() => ({
-    projectStatus: createChartData(stats.projectStatus, 'Project Status'),
-    approvalStatus: createChartData(stats.approvalStatus, 'Functional Requirements Approval'),
-    smeReviews: createChartData(stats.smeReviews, 'SME Reviews'),
-    developmentStatus: createChartData(stats.developmentStatus, 'Development Status'),
-    testingStatus: createChartData(stats.testingStatus, 'Testing Status'),
-    uatExtensions: createChartData(stats.uatExtensions, 'UAT Extensions'),
-    cmanPackages: createChartData(stats.cmanPackages, 'CMAN Packages'),
-    serviceNowChanges: createChartData(stats.serviceNowChanges, 'ServiceNow Changes')
-  }), [stats, createChartData]);
-
-  const options = useMemo(() => ({
-    ...chartOptions,
-    animation: {
-      duration: 0 // 禁用动画以减少闪烁
-    },
-    layout: {
-      padding: 20
-    }
-  }), []);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {renderStatusCard(
         'Project Status',
         stats.projectStatus,
-        <GitPullRequest className="h-5 w-5 text-blue-700" />,
         'bg-blue-50',
         'bar'
       )}
@@ -230,7 +205,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {renderStatusCard(
         'Functional Requirements Approval',
         stats.approvalStatus,
-        <FileCheck2 className="h-5 w-5 text-green-700" />,
         'bg-green-50',
         'pie'
       )}
@@ -238,7 +212,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {renderStatusCard(
         'SME Reviews',
         stats.smeReviews,
-        <Workflow className="h-5 w-5 text-purple-700" />,
         'bg-purple-50',
         'pie'
       )}
@@ -246,7 +219,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {renderStatusCard(
         'Development Status',
         stats.developmentStatus,
-        <PackageCheck className="h-5 w-5 text-orange-700" />,
         'bg-orange-50',
         'bar'
       )}
@@ -254,7 +226,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {renderStatusCard(
         'Testing Status',
         stats.testingStatus,
-        <TestTube2 className="h-5 w-5 text-teal-700" />,
         'bg-teal-50',
         'bar'
       )}
@@ -262,7 +233,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {renderStatusCard(
         'UAT Extensions',
         stats.uatExtensions,
-        <Clock className="h-5 w-5 text-red-700" />,
         'bg-red-50',
         'pie'
       )}
@@ -270,7 +240,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {renderStatusCard(
         'CMAN Packages',
         stats.cmanPackages,
-        <Package className="h-5 w-5 text-indigo-700" />,
         'bg-indigo-50',
         'bar'
       )}
@@ -278,7 +247,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {renderStatusCard(
         'ServiceNow Changes',
         stats.serviceNowChanges,
-        <FileSpreadsheet className="h-5 w-5 text-cyan-700" />,
         'bg-cyan-50',
         'bar'
       )}
