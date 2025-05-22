@@ -111,41 +111,56 @@ const ExcelViewer: React.FC = () => {
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Excel File Viewer</h2>
         
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
-          <label className="flex-1 flex flex-col md:flex-row items-center px-4 py-3 bg-blue-50 text-blue-700 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors duration-300">
-            <FileUp className="h-5 w-5 mr-2" />
-            <span className="text-sm font-medium">Upload Excel File</span>
-            <input 
-              type="file" 
-              accept=".xlsx, .xls, .csv" 
-              onChange={handleFileUpload} 
-              className="hidden" 
-            />
-          </label>
-          
-          {excelData && (
-            <>
-              <button 
-                onClick={exportToExcel}
-                className="flex items-center justify-center px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors duration-300"
-              >
-                <Download className="h-5 w-5 mr-2" />
-                <span className="text-sm font-medium">Export Modified</span>
-              </button>
-              
-              <button 
-                onClick={saveDashboard}
-                className="flex items-center justify-center px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors duration-300"
-              >
-                <Save className="h-5 w-5 mr-2" />
-                <span className="text-sm font-medium">Save Dashboard</span>
-              </button>
-            </>
+        <div className="flex flex-col space-y-4">
+          {savedDashboards.length > 0 && !excelData && (
+            <div className="flex items-center space-x-4">
+              <SheetSelector 
+                sheetNames={[]}
+                selectedSheet={selectedSheet}
+                onSelectSheet={setSelectedSheet}
+                savedDashboards={savedDashboards}
+                onLoadDashboard={loadDashboard}
+              />
+              <span className="text-sm text-gray-500">Select a saved dashboard to load</span>
+            </div>
           )}
+
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <label className="flex-1 flex flex-col md:flex-row items-center px-4 py-3 bg-blue-50 text-blue-700 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors duration-300">
+              <FileUp className="h-5 w-5 mr-2" />
+              <span className="text-sm font-medium">Upload Excel File</span>
+              <input 
+                type="file" 
+                accept=".xlsx, .xls, .csv" 
+                onChange={handleFileUpload} 
+                className="hidden" 
+              />
+            </label>
+            
+            {excelData && (
+              <>
+                <button 
+                  onClick={exportToExcel}
+                  className="flex items-center justify-center px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors duration-300"
+                >
+                  <Download className="h-5 w-5 mr-2" />
+                  <span className="text-sm font-medium">Export Modified</span>
+                </button>
+                
+                <button 
+                  onClick={saveDashboard}
+                  className="flex items-center justify-center px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors duration-300"
+                >
+                  <Save className="h-5 w-5 mr-2" />
+                  <span className="text-sm font-medium">Save Dashboard</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
         
         {fileName && (
-          <div className="flex flex-col md:flex-row md:items-center gap-2 text-sm text-gray-600 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 text-sm text-gray-600 mb-4 mt-4">
             <div className="flex items-center">
               <FileSpreadsheet className="h-4 w-4 mr-2 text-orange-500" />
               <span>Current file: <span className="font-medium">{fileName}</span></span>
@@ -161,7 +176,7 @@ const ExcelViewer: React.FC = () => {
         
         {excelData && (
           <>
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex flex-col md:flex-row gap-4 mb-6 mt-4">
               <SheetSelector 
                 sheetNames={excelData.sheetNames} 
                 selectedSheet={selectedSheet} 
@@ -193,7 +208,7 @@ const ExcelViewer: React.FC = () => {
           </>
         )}
         
-        {!excelData && (
+        {!excelData && savedDashboards.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="bg-gray-100 p-6 rounded-full mb-4">
               <FileSpreadsheet className="h-12 w-12 text-blue-500" />

@@ -32,21 +32,24 @@ const SheetSelector: React.FC<SheetSelectorProps> = ({
   };
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block min-w-[300px]">
       <div className="flex items-center">
         <Table className="h-4 w-4 mr-2 text-gray-500" />
         <select
           value={selectedSheet}
           onChange={(e) => handleChange(e.target.value)}
-          className="appearance-none bg-white border border-gray-200 rounded-lg pl-2 pr-8 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer transition-all duration-300"
+          className="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-2 pr-8 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer transition-all duration-300"
         >
-          <optgroup label="Current Sheets">
-            {sheetNames.map((sheetName) => (
-              <option key={sheetName} value={sheetName}>
-                {sheetName}
-              </option>
-            ))}
-          </optgroup>
+          <option value="">Select a dashboard...</option>
+          {sheetNames.length > 0 && (
+            <optgroup label="Current Sheets">
+              {sheetNames.map((sheetName) => (
+                <option key={sheetName} value={sheetName}>
+                  {sheetName}
+                </option>
+              ))}
+            </optgroup>
+          )}
           
           {savedDashboards.length > 0 && (
             <optgroup label="Saved Dashboards">
