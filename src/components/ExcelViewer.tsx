@@ -11,15 +11,15 @@ const ExcelViewer: React.FC = () => {
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [fileName, setFileName] = useState<string>('');
-  const [importTime, setImportTime] = useState<number | null>(null);
+  const [importDateTime, setImportDateTime] = useState<string | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setFileName(file.name);
+    setImportDateTime(new Date().toLocaleString());
     
-    const startTime = performance.now();
     const reader = new FileReader();
     
     reader.onload = (e) => {
@@ -34,15 +34,12 @@ const ExcelViewer: React.FC = () => {
           sheets[sheetName] = jsonData as any[][];
         });
         
-        const endTime = performance.now();
-        setImportTime(endTime - startTime);
-        
         setExcelData({ sheets, sheetNames: workbook.SheetNames });
         setSelectedSheet(workbook.SheetNames[0]);
       } catch (error) {
         console.error('Error parsing Excel file:', error);
         alert('Error parsing Excel file. Please check the file format.');
-        setImportTime(null);
+        setImportDateTime(null);
       }
     };
     reader.readAsArrayBuffer(file);
@@ -103,10 +100,10 @@ const ExcelViewer: React.FC = () => {
               <FileSpreadsheet className="h-4 w-4 mr-2 text-orange-500" />
               <span>Current file: <span className="font-medium">{fileName}</span></span>
             </div>
-            {importTime && (
+            {importDateTime && (
               <div className="flex items-center md:ml-4">
                 <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                <span>Import time: <span className="font-medium">{importTime.toFixed(2)}ms</span></span>
+                <span>Imported on: <span className="font-medium">{importDateTime}</span></span>
               </div>
             )}
           </div>
