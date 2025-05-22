@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { FileUp, Download, Search, FileSpreadsheet } from 'lucide-react';
+import { FileUp, Download, Search, FileSpreadsheet, Clock } from 'lucide-react';
 import Dashboard from './Dashboard';
 import DataTable from './DataTable';
 import SheetSelector from './SheetSelector';
@@ -11,6 +11,7 @@ const ExcelViewer: React.FC = () => {
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [fileName, setFileName] = useState<string>('');
+  const [importTime, setImportTime] = useState<number | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -18,7 +19,9 @@ const ExcelViewer: React.FC = () => {
 
     setFileName(file.name);
     
+    const startTime = performance.now();
     const reader = new FileReader();
+    
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -31,11 +34,15 @@ const ExcelViewer: React.FC = () => {
           sheets[sheetName] = jsonData as any[][];
         });
         
+        const endTime = performance.now();
+        setImportTime(endTime - startTime);
+        
         setExcelData({ sheets, sheetNames: workbook.SheetNames });
         setSelectedSheet(workbook.SheetNames[0]);
       } catch (error) {
         console.error('Error parsing Excel file:', error);
         alert('Error parsing Excel file. Please check the file format.');
+        setImportTime(null);
       }
     };
     reader.readAsArrayBuffer(file);
@@ -91,9 +98,17 @@ const ExcelViewer: React.FC = () => {
         </div>
         
         {fileName && (
-          <div className="flex items-center text-sm text-gray-600 mb-4">
-            <FileSpreadsheet className="h-4 w-4 mr-2 text-orange-500" />
-            <span>Current file: <span className="font-medium">{fileName}</span></span>
+          <div className="flex flex-col md:flex-row md:items-center gap-2 text-sm text-gray-600 mb-4">
+            <div className="flex items-center">
+              <FileSpreadsheet className="h-4 w-4 mr-2 text-orange-500" />
+              <span>Current file: <span className="font-medium">{fileName}</span></span>
+            </div>
+            {importTime && (
+              <div className="flex items-center md:ml-4">
+                <Clock className="h-4 w-4 mr-2 text-blue-500" />
+                <span>Import time: <span className="font-medium">{importTime.toFixed(2)}ms</span></span>
+              </div>
+            )}
           </div>
         )}
         
