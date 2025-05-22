@@ -122,120 +122,118 @@ const ExcelViewer: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 transform hover:shadow-xl">
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Excel File Viewer</h2>
-        
-        <div className="flex flex-col space-y-4">
-          {savedDashboards.length > 0 && !excelData && (
-            <div className="flex items-center space-x-4">
-              <SheetSelector 
-                sheetNames={[]}
-                selectedSheet={selectedSheet}
-                onSelectSheet={setSelectedSheet}
-                savedDashboards={savedDashboards}
-                onLoadDashboard={loadDashboard}
-                onDeleteDashboard={deleteDashboard}
-              />
-              <span className="text-sm text-gray-500">Select a saved dashboard to load</span>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col space-y-6">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <h2 className="text-2xl font-semibold text-gray-800">Excel Dashboard Viewer</h2>
+              
+              {savedDashboards.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <SheetSelector 
+                    sheetNames={excelData?.sheetNames || []}
+                    selectedSheet={selectedSheet}
+                    onSelectSheet={setSelectedSheet}
+                    savedDashboards={savedDashboards}
+                    onLoadDashboard={loadDashboard}
+                    onDeleteDashboard={deleteDashboard}
+                  />
+                </div>
+              )}
             </div>
-          )}
 
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <label className="flex-1 flex flex-col md:flex-row items-center px-4 py-3 bg-blue-50 text-blue-700 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors duration-300">
-              <FileUp className="h-5 w-5 mr-2" />
-              <span className="text-sm font-medium">Upload Excel File</span>
-              <input 
-                type="file" 
-                accept=".xlsx, .xls, .csv" 
-                onChange={handleFileUpload} 
-                className="hidden" 
-              />
-            </label>
-            
-            {excelData && (
-              <>
-                <button 
-                  onClick={exportToExcel}
-                  className="flex items-center justify-center px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors duration-300"
-                >
-                  <Download className="h-5 w-5 mr-2" />
-                  <span className="text-sm font-medium">Export Modified</span>
-                </button>
-                
-                <button 
-                  onClick={saveDashboard}
-                  className="flex items-center justify-center px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors duration-300"
-                >
-                  <Save className="h-5 w-5 mr-2" />
-                  <span className="text-sm font-medium">Save Dashboard</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-        
-        {fileName && (
-          <div className="flex flex-col md:flex-row md:items-center gap-2 text-sm text-gray-600 mb-4 mt-4">
-            <div className="flex items-center">
-              <FileSpreadsheet className="h-4 w-4 mr-2 text-orange-500" />
-              <span>Current file: <span className="font-medium">{fileName}</span></span>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-4">
+              <label className="flex-none flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-xl cursor-pointer hover:bg-blue-100 transition-all duration-300 shadow-sm hover:shadow">
+                <FileUp className="h-5 w-5 mr-3" />
+                <span className="font-medium">Upload Excel File</span>
+                <input 
+                  type="file" 
+                  accept=".xlsx, .xls, .csv" 
+                  onChange={handleFileUpload} 
+                  className="hidden" 
+                />
+              </label>
+              
+              {excelData && (
+                <>
+                  <button 
+                    onClick={exportToExcel}
+                    className="flex items-center px-6 py-3 bg-teal-50 text-teal-700 rounded-xl hover:bg-teal-100 transition-all duration-300 shadow-sm hover:shadow"
+                  >
+                    <Download className="h-5 w-5 mr-3" />
+                    <span className="font-medium">Export Modified</span>
+                  </button>
+                  
+                  <button 
+                    onClick={saveDashboard}
+                    className="flex items-center px-6 py-3 bg-purple-50 text-purple-700 rounded-xl hover:bg-purple-100 transition-all duration-300 shadow-sm hover:shadow"
+                  >
+                    <Save className="h-5 w-5 mr-3" />
+                    <span className="font-medium">Save Dashboard</span>
+                  </button>
+                </>
+              )}
             </div>
-            {importDateTime && (
-              <div className="flex items-center md:ml-4">
-                <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                <span>Imported on: <span className="font-medium">{importDateTime}</span></span>
+
+            {/* File Info */}
+            {fileName && (
+              <div className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center">
+                  <FileSpreadsheet className="h-5 w-5 mr-3 text-orange-500" />
+                  <span className="text-gray-600">Current file: <span className="font-medium text-gray-900">{fileName}</span></span>
+                </div>
+                {importDateTime && (
+                  <div className="flex items-center md:ml-6">
+                    <Clock className="h-5 w-5 mr-3 text-blue-500" />
+                    <span className="text-gray-600">Imported: <span className="font-medium text-gray-900">{importDateTime}</span></span>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
-        
-        {excelData && (
-          <>
-            <div className="flex flex-col md:flex-row gap-4 mb-6 mt-4">
-              <SheetSelector 
-                sheetNames={excelData.sheetNames} 
-                selectedSheet={selectedSheet} 
-                onSelectSheet={setSelectedSheet}
-                savedDashboards={savedDashboards}
-                onLoadDashboard={loadDashboard}
-                onDeleteDashboard={deleteDashboard}
-              />
-              
-              <div className="flex-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
+
+            {/* Search Bar */}
+            {excelData && (
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input 
                   type="text" 
-                  placeholder="Search in sheet..." 
+                  placeholder="Search in dashboard..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                 />
               </div>
-            </div>
-            
-            {selectedSheet && excelData.sheets[selectedSheet] && (
-              <div className="overflow-auto">
+            )}
+
+            {/* Dashboard and Table */}
+            {selectedSheet && excelData?.sheets[selectedSheet] && (
+              <div className="space-y-8">
                 <Dashboard data={excelData.sheets[selectedSheet]} />
                 <DataTable data={filterData(excelData.sheets[selectedSheet])} />
               </div>
             )}
-          </>
-        )}
-        
-        {!excelData && savedDashboards.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="bg-gray-100 p-6 rounded-full mb-4">
-              <FileSpreadsheet className="h-12 w-12 text-blue-500" />
-            </div>
-            <h3 className="text-xl font-medium text-gray-800 mb-2">No Excel File Loaded</h3>
-            <p className="text-gray-600 max-w-md">
-              Upload an Excel file to view and edit its contents, or select a saved dashboard from the dropdown. Supported formats: .xlsx, .xls, and .csv
-            </p>
+
+            {/* Empty State */}
+            {!excelData && savedDashboards.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50 rounded-xl">
+                <div className="bg-white p-6 rounded-full shadow-sm mb-6">
+                  <FileSpreadsheet className="h-12 w-12 text-blue-500" />
+                </div>
+                <h3 className="text-xl font-medium text-gray-800 mb-3">No Dashboard Loaded</h3>
+                <p className="text-gray-600 max-w-md">
+                  Upload an Excel file to view and analyze your data with interactive charts and tables.
+                  <br />
+                  Supported formats: .xlsx, .xls, and .csv
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
