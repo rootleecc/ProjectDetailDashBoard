@@ -196,6 +196,20 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {renderStatusCard(
+        'Development Status',
+        stats.developmentStatus,
+        'bg-orange-50',
+        'bar'
+      )}
+
+      {renderStatusCard(
+        'Testing Status',
+        stats.testingStatus,
+        'bg-teal-50',
+        'bar'
+      )}
+
+      {renderStatusCard(
         'Project Status',
         stats.projectStatus,
         'bg-blue-50',
@@ -214,20 +228,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         stats.smeReviews,
         'bg-purple-50',
         'pie'
-      )}
-
-      {renderStatusCard(
-        'Development Status',
-        stats.developmentStatus,
-        'bg-orange-50',
-        'bar'
-      )}
-
-      {renderStatusCard(
-        'Testing Status',
-        stats.testingStatus,
-        'bg-teal-50',
-        'bar'
       )}
 
       {renderStatusCard(
