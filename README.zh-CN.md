@@ -1,6 +1,6 @@
-# Excel 文件查看器
+# 项目详情仪表板
 
-一个用于查看和分析 Excel 文件的现代化 Web 应用，具有交互式仪表板和数据可视化功能。
+一个现代化的 Web 应用，用于实时监控和分析项目数据，提供交互式仪表板和数据可视化功能。
 
 ## 技术栈
 
@@ -14,20 +14,34 @@
 
 ## 功能特性
 
-- 📊 交互式仪表板（饼图和柱状图）
-- 📑 多工作表支持
-- 🔍 实时搜索功能
-- 📈 数据可视化，包括：
-  - 项目状态
-  - 需求审批
-  - SME 评审
-  - 开发状态
-  - 测试状态
-  - UAT 延期
-  - CMAN 包（FS/SEC）
-  - ServiceNow 变更
-- 💾 导出修改后的数据
-- 📱 响应式设计
+- 📊 交互式仪表板
+  - 开发状态和测试状态优先展示
+  - 支持饼图和柱状图可视化
+  - 实时数据统计和百分比显示
+- 💾 仪表板管理
+  - 保存多个仪表板配置
+  - 快速切换已保存的仪表板
+  - 删除不需要的仪表板
+- 🔍 数据分析功能
+  - 项目状态追踪
+  - 需求审批流程
+  - SME 评审状态
+  - 开发进度监控
+  - 测试状态跟踪
+  - UAT 延期管理
+  - CMAN 包管理（FS/SEC）
+  - ServiceNow 变更记录
+- 📈 数据可视化
+  - 多维度数据展示
+  - 实时搜索和过滤
+  - 详细的数据表格视图
+- 💻 用户友好界面
+  - 现代化设计
+  - 响应式布局
+  - 直观的操作流程
+- 📤 数据导出
+  - 导出为 Excel 格式
+  - 保留所有数据和格式
 
 ## 本地开发
 
@@ -51,115 +65,34 @@ npm run build
 npm run preview
 ```
 
-## ECS 部署指南
+## 使用指南
 
-### 前置条件
+### 导入数据
+1. 点击"导入项目数据"按钮
+2. 选择 Excel 文件（支持 .xlsx, .xls, .csv 格式）
+3. 系统自动解析并展示数据
 
-1. 在 AWS 账户中设置 ECS 集群
-2. 配置应用负载均衡器（ALB）
-3. 创建用于容器镜像的 ECR 仓库
+### 保存仪表板
+1. 导入数据后，点击"保存仪表板"按钮
+2. 系统自动保存当前视图配置
+3. 可在下拉菜单中查看所有保存的仪表板
 
-### Docker 配置
+### 管理仪表板
+1. 使用顶部下拉菜单切换不同的仪表板
+2. 点击删除图标可移除不需要的仪表板
+3. 可随时导入新数据更新现有仪表板
 
-1. 在项目根目录创建 Dockerfile：
-```dockerfile
-FROM node:20-alpine as builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+### 数据分析
+1. 使用搜索框过滤特定项目或状态
+2. 查看各个维度的数据分布
+3. 通过图表直观了解项目进展
+4. 在数据表格中查看详细信息
 
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
+### 导出报告
+1. 点击"导出报告"按钮
+2. 自动下载包含当前视图数据的 Excel 文件
+3. 可用于离线分析或分享
 
-2. 创建 nginx.conf 用于路由：
-```nginx
-server {
-    listen 80;
-    server_name _;
-    root /usr/share/nginx/html;
-    index index.html;
-    
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
+## 部署说明
 
-### 部署步骤
-
-1. 构建并标记 Docker 镜像：
-```bash
-docker build -t excel-viewer .
-docker tag excel-viewer:latest [ECR_REGISTRY]/excel-viewer:latest
-```
-
-2. 推送到 ECR：
-```bash
-aws ecr get-login-password --region [REGION] | docker login --username AWS --password-stdin [ECR_REGISTRY]
-docker push [ECR_REGISTRY]/excel-viewer:latest
-```
-
-3. 更新 ECS 任务定义：
-- 设置容器镜像为你的 ECR 镜像
-- 配置内存和 CPU 要求
-- 映射 80 端口
-
-4. 更新 ECS 服务：
-- 选择新的任务定义
-- 配置所需任务数量
-- 设置 ALB 目标组
-
-### CI/CD 流水线（可选）
-
-使用 AWS CodePipeline，包含：
-1. 源：GitHub 仓库
-2. 构建：AWS CodeBuild
-3. 部署：AWS ECS
-
-CodeBuild buildspec.yml 示例：
-```yaml
-version: 0.2
-phases:
-  pre_build:
-    commands:
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-      - REPOSITORY_URI=$ECR_REGISTRY/excel-viewer
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-  build:
-    commands:
-      - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
-  post_build:
-    commands:
-      - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - printf '{"ImageURI":"%s"}' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
-artifacts:
-  files:
-    - imageDefinitions.json
-```
-
-### 监控
-
-1. 设置 CloudWatch 指标监控：
-   - 容器洞察
-   - ALB 指标
-   - 目标组健康状况
-
-2. 配置告警：
-   - CPU/内存使用率过高
-   - 错误率
-   - 响应时间
-
-### 安全考虑
-
-1. 使用安全组控制流量
-2. 在 ALB 上启用 AWS WAF
-3. 使用 SSL/TLS 证书实现 HTTPS
-4. 实施适当的 IAM 角色和策略
+请参考英文版 README 中的部署指南进行生产环境部署。
