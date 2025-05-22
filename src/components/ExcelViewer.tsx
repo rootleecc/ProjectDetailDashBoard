@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { FileUp, Download, Search, FileSpreadsheet, Clock, Save } from 'lucide-react';
+import { FileUp, Download, Search, LayoutDashboard, Clock, Save } from 'lucide-react';
 import Dashboard from './Dashboard';
 import DataTable from './DataTable';
 import SheetSelector from './SheetSelector';
@@ -51,8 +51,8 @@ const ExcelViewer: React.FC = () => {
         setExcelData({ sheets, sheetNames: workbook.SheetNames });
         setSelectedSheet(workbook.SheetNames[0]);
       } catch (error) {
-        console.error('Error parsing Excel file:', error);
-        alert('Error parsing Excel file. Please check the file format.');
+        console.error('Error parsing project data:', error);
+        alert('Error parsing project data. Please check the file format.');
         setImportDateTime(null);
       }
     };
@@ -72,7 +72,7 @@ const ExcelViewer: React.FC = () => {
     const updatedDashboards = [...savedDashboards.filter(d => d.name !== dashboardName), newDashboard];
     setSavedDashboards(updatedDashboards);
     localStorage.setItem('savedDashboards', JSON.stringify(updatedDashboards));
-    alert('Dashboard saved successfully!');
+    alert('Project dashboard saved successfully!');
   };
 
   const loadDashboard = (dashboard: SavedDashboard) => {
@@ -86,7 +86,7 @@ const ExcelViewer: React.FC = () => {
   };
 
   const deleteDashboard = (dashboardName: string) => {
-    if (confirm('Are you sure you want to delete this dashboard?')) {
+    if (confirm('Are you sure you want to delete this project dashboard?')) {
       const updatedDashboards = savedDashboards.filter(d => d.name !== dashboardName);
       setSavedDashboards(updatedDashboards);
       localStorage.setItem('savedDashboards', JSON.stringify(updatedDashboards));
@@ -107,7 +107,7 @@ const ExcelViewer: React.FC = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, selectedSheet);
     
-    const exportFileName = fileName.replace(/\.[^/.]+$/, '') + '_modified.xlsx';
+    const exportFileName = fileName.replace(/\.[^/.]+$/, '') + '_project_details.xlsx';
     XLSX.writeFile(workbook, exportFileName);
   };
 
@@ -128,7 +128,7 @@ const ExcelViewer: React.FC = () => {
           <div className="flex flex-col space-y-6">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h2 className="text-2xl font-semibold text-gray-800">Excel Dashboard Viewer</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">Project Analytics Dashboard</h2>
               
               {savedDashboards.length > 0 && (
                 <div className="flex items-center gap-4">
@@ -148,7 +148,7 @@ const ExcelViewer: React.FC = () => {
             <div className="flex flex-wrap gap-4">
               <label className="flex-none flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-xl cursor-pointer hover:bg-blue-100 transition-all duration-300 shadow-sm hover:shadow">
                 <FileUp className="h-5 w-5 mr-3" />
-                <span className="font-medium">Upload Excel File</span>
+                <span className="font-medium">Import Project Data</span>
                 <input 
                   type="file" 
                   accept=".xlsx, .xls, .csv" 
@@ -164,7 +164,7 @@ const ExcelViewer: React.FC = () => {
                     className="flex items-center px-6 py-3 bg-teal-50 text-teal-700 rounded-xl hover:bg-teal-100 transition-all duration-300 shadow-sm hover:shadow"
                   >
                     <Download className="h-5 w-5 mr-3" />
-                    <span className="font-medium">Export Modified</span>
+                    <span className="font-medium">Export Report</span>
                   </button>
                   
                   <button 
@@ -182,13 +182,13 @@ const ExcelViewer: React.FC = () => {
             {fileName && (
               <div className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-center">
-                  <FileSpreadsheet className="h-5 w-5 mr-3 text-orange-500" />
-                  <span className="text-gray-600">Current file: <span className="font-medium text-gray-900">{fileName}</span></span>
+                  <LayoutDashboard className="h-5 w-5 mr-3 text-orange-500" />
+                  <span className="text-gray-600">Current project: <span className="font-medium text-gray-900">{fileName}</span></span>
                 </div>
                 {importDateTime && (
                   <div className="flex items-center md:ml-6">
                     <Clock className="h-5 w-5 mr-3 text-blue-500" />
-                    <span className="text-gray-600">Imported: <span className="font-medium text-gray-900">{importDateTime}</span></span>
+                    <span className="text-gray-600">Last updated: <span className="font-medium text-gray-900">{importDateTime}</span></span>
                   </div>
                 )}
               </div>
@@ -202,7 +202,7 @@ const ExcelViewer: React.FC = () => {
                 </div>
                 <input 
                   type="text" 
-                  placeholder="Search in dashboard..." 
+                  placeholder="Search projects..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
@@ -222,11 +222,11 @@ const ExcelViewer: React.FC = () => {
             {!excelData && savedDashboards.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50 rounded-xl">
                 <div className="bg-white p-6 rounded-full shadow-sm mb-6">
-                  <FileSpreadsheet className="h-12 w-12 text-blue-500" />
+                  <LayoutDashboard className="h-12 w-12 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-medium text-gray-800 mb-3">No Dashboard Loaded</h3>
+                <h3 className="text-xl font-medium text-gray-800 mb-3">No Project Data Loaded</h3>
                 <p className="text-gray-600 max-w-md">
-                  Upload an Excel file to view and analyze your data with interactive charts and tables.
+                  Import your project data to view detailed analytics and insights.
                   <br />
                   Supported formats: .xlsx, .xls, and .csv
                 </p>
