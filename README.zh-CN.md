@@ -93,6 +93,139 @@ npm run preview
 2. 自动下载包含当前视图数据的 Excel 文件
 3. 可用于离线分析或分享
 
-## 部署说明
+## RHEL 8 部署指南
 
-请参考英文版 README 中的部署指南进行生产环境部署。
+### 系统要求
+- RHEL 8 或更高版本
+- Node.js 18 或更高版本
+- Nginx 1.14 或更高版本
+- 2GB 以上内存
+- 10GB 以上磁盘空间
+
+### 安装必要软件
+1. 安装 Node.js：
+```bash
+# 添加 NodeSource 仓库
+dnf module enable nodejs:18
+dnf module install nodejs:18
+
+# 验证安装
+node --version
+npm --version
+```
+
+2. 安装 Nginx：
+```bash
+dnf install nginx
+```
+
+### 应用部署步骤
+
+1. 创建应用目录：
+```bash
+mkdir -p /var/www/project-dashboard
+cd /var/www/project-dashboard
+```
+
+2. 上传项目文件：
+```bash
+# 使用 SCP 或其他方式上传项目文件
+# 示例：
+scp -r * user@server:/var/www/project-dashboard/
+```
+
+3. 安装依赖并构建：
+```bash
+cd /var/www/project-dashboard
+npm install
+npm run build
+```
+
+4. 配置 Nginx：
+```bash
+# 创建 Nginx 配置文件
+cat > /etc/nginx/conf.d/project-dashboard.conf << 'EOL'
+server {
+    listen 80;
+    server_name your-domain.com;
+    root /var/www/project-dashboard/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache, must-revalidate";
+    }
+
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
+EOL
+```
+
+5. 启动服务：
+```bash
+# 测试 Nginx 配置
+nginx -t
+
+# 启动 Nginx
+systemctl start nginx
+systemctl enable nginx
+
+# 配置防火墙
+firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-service=https
+firewall-cmd --reload
+```
+
+### SELinux 配置
+如果启用了 SELinux，需要配置适当的权限：
+```bash
+# 允许 Nginx 访问网络
+setsebool -P httpd_can_network_connect 1
+
+# 设置正确的文件上下文
+semanage fcontext -a -t httpd_sys_content_t "/var/www/project-dashboard/dist(/.*)?"
+restorecon -Rv /var/www/project-dashboard/dist
+```
+
+### 监控和维护
+1. 日志位置：
+   - Nginx 访问日志：`/var/log/nginx/access.log`
+   - Nginx 错误日志：`/var/log/nginx/error.log`
+
+2. 性能优化：
+   - 启用 Nginx 缓存
+   - 配置合适的 worker_processes
+   - 优化静态资源压缩
+
+3. 安全加固：
+   - 配置 SSL/TLS
+   - 启用 HTTP/2
+   - 设置安全响应头
+   - 定期更新系统和依赖包
+
+### 故障排除
+1. 检查服务状态：
+```bash
+systemctl status nginx
+```
+
+2. 检查日志：
+```bash
+tail -f /var/log/nginx/error.log
+```
+
+3. 检查权限：
+```bash
+ls -la /var/www/project-dashboard
+```
+
+4. SELinux 问题：
+```bash
+ausearch -m AVC -ts recent
+```
