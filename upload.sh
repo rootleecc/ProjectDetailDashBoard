@@ -5,6 +5,6 @@ rsync -av \
   --exclude 'node_modules' \
   --exclude 'backup' \
   --exclude '.bolt' \
-  ./ /home/gl34819/
+  ./ username@your-server-ip:/home/gl34819/
 
 echo "Files uploaded successfully!"
