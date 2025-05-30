@@ -8,11 +8,11 @@ dnf module install nodejs:18 -y
 dnf install nginx -y
 
 # 创建项目目录
-mkdir -p /var/www/excel-viewer
-cd /var/www/excel-viewer
+mkdir -p /home/gl34819/excel-viewer
+cd /home/gl34819/excel-viewer
 
 # 复制项目文件
-cp -r /path/to/your/project/* .
+cp -r /home/gl34819/* .
 
 # 安装依赖并构建
 npm install
@@ -23,8 +23,8 @@ cp nginx.conf /etc/nginx/conf.d/excel-viewer.conf
 
 # 配置 SELinux
 setsebool -P httpd_can_network_connect 1
-semanage fcontext -a -t httpd_sys_content_t "/var/www/excel-viewer/dist(/.*)?"
-restorecon -Rv /var/www/excel-viewer/dist
+semanage fcontext -a -t httpd_sys_content_t "/home/gl34819/excel-viewer/dist(/.*)?"
+restorecon -Rv /home/gl34819/excel-viewer/dist
 
 # 启动 Nginx
 systemctl start nginx
